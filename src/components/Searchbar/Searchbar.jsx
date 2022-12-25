@@ -1,7 +1,7 @@
 import React from 'react';
 import css from './Searchbar.module.css';
 
-export default function Searchbar({ onRequestForImg, onSubmit }) {
+export default function Searchbar({ onRequestForImg, onSubmit, value }) {
   return (
     <header className={css.Searchbar}>
       <form className={css.SearchForm} onSubmit={onSubmit}>
@@ -16,6 +16,7 @@ export default function Searchbar({ onRequestForImg, onSubmit }) {
           autoFocus
           placeholder="Search images and photos"
           onChange={onRequestForImg}
+          value={value}
         />
       </form>
     </header>

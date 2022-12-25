@@ -40,12 +40,6 @@ export default class App extends Component {
     }
   }
 
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.onKeyDown);
-
-    this.setState({ urlOfLargePhoto: '' });
-  }
-
   onRequestForImg = e => {
     this.setState({ requestForImg: e.target.value.trim() });
   };
@@ -91,12 +85,14 @@ export default class App extends Component {
   };
 
   render() {
-    const { photos, visibleBtn, visibleModal, isLoader } = this.state;
+    const { photos, visibleBtn, visibleModal, isLoader, requestForImg } =
+      this.state;
 
     return (
       <div className={css.App}>
         <ToastContainer autoClose={3000} theme="dark" />
         <Searchbar
+          value={requestForImg}
           onRequestForImg={this.onRequestForImg}
           onSubmit={this.onSubmit}
         />
