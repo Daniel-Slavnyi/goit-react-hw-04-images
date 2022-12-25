@@ -1,7 +1,10 @@
 // import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { ColorRing } from 'react-loader-spinner';
 import Button from 'components/Button/Button';
 import Modal from 'components/Modal/Modal';
-import React, { Component } from 'react';
 import ImageGallery from '../ImageGallery/ImageGallery';
 import Searchbar from '../Searchbar/Searchbar';
 import fecthPhotos from '../services/api';
@@ -15,38 +18,33 @@ export default class App extends Component {
     numberOfPage: 1,
     urlOfLargePhoto: '',
     visibleModal: false,
+    isLoader: false,
   };
-
-  componentDidMount() {
-    window.addEventListener('keydown', this.onKeyDown);
-  }
 
   componentDidUpdate(_, prevState) {
     const { requestForImg, numberOfPage } = this.state;
-
     if (numberOfPage !== prevState.numberOfPage) {
-      fecthPhotos(requestForImg, numberOfPage).then(hits => {
-        this.setState(prevState => {
-          return {
-            photos: [...prevState.photos, ...hits],
-          };
+      this.setState({ isLoader: true });
+
+      fecthPhotos(requestForImg, numberOfPage)
+        .then(hits => {
+          this.setState(prevState => {
+            return {
+              photos: [...prevState.photos, ...hits],
+            };
+          });
+        })
+        .finally(() => {
+          this.setState({ isLoader: false });
         });
-      });
     }
   }
 
   componentWillUnmount() {
-    console.log('delete');
     window.removeEventListener('keydown', this.onKeyDown);
 
     this.setState({ urlOfLargePhoto: '' });
   }
-
-  onKeyDown = e => {
-    if (e.code === 'Escape') {
-      this.togleModal();
-    }
-  };
 
   onRequestForImg = e => {
     this.setState({ requestForImg: e.target.value.trim() });
@@ -57,10 +55,16 @@ export default class App extends Component {
 
     const { requestForImg } = this.state;
     if (!requestForImg) {
+      toast('Please, select image title');
       return;
     }
 
     fecthPhotos(requestForImg).then(hits => {
+      if (hits.length === 0) {
+        toast('There is nothing to search(');
+        this.setState({ requestForImg: '' });
+        return;
+      }
       this.setState({ photos: hits, visibleBtn: true });
     });
   };
@@ -87,17 +91,33 @@ export default class App extends Component {
   };
 
   render() {
-    const { photos, visibleBtn, visibleModal } = this.state;
+    const { photos, visibleBtn, visibleModal, isLoader } = this.state;
 
     return (
       <div className={css.App}>
+        <ToastContainer autoClose={3000} theme="dark" />
         <Searchbar
           onRequestForImg={this.onRequestForImg}
           onSubmit={this.onSubmit}
         />
         <ImageGallery photos={photos} getLargePhoto={this.getLargePhoto} />
         {visibleBtn && <Button loadMore={this.loadMore} />}
-        {visibleModal && <Modal url={this.state.urlOfLargePhoto} />}
+        {visibleModal && (
+          <Modal
+            url={this.state.urlOfLargePhoto}
+            togleModal={this.togleModal}
+          />
+        )}
+        {isLoader && (
+          <ColorRing
+            visible={true}
+            height="50"
+            width="50"
+            ariaLabel="blocks-loading"
+            wrapperClass={css.Loader}
+            colors={['#e15b64', '#f47e60', '#f8b26a', '#abbd81', '#849b87']}
+          />
+        )}
       </div>
     );
   }
