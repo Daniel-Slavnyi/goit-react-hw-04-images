@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import css from './ImageGalleryItem.module.css';
 
 export default function ImageGalleryItem({
@@ -17,3 +18,10 @@ export default function ImageGalleryItem({
     </li>
   );
 }
+
+ImageGalleryItem.propTypes = {
+  url: PropTypes.string.isRequired,
+  tags: PropTypes.string,
+  largeImageURL: PropTypes.string.isRequired,
+  getLargePhoto: PropTypes.func.isRequired,
+};

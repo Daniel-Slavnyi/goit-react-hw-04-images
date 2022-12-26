@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export default async function fecthPhotos(value, numOfPage) {
+export default async function fecthPhotos(value, numOfPage = 1) {
   try {
     const {
       data: { hits },

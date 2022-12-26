@@ -1,66 +1,34 @@
-// import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ColorRing } from 'react-loader-spinner';
-import Button from 'components/Button/Button';
 import Modal from 'components/Modal/Modal';
 import ImageGallery from '../ImageGallery/ImageGallery';
 import Searchbar from '../Searchbar/Searchbar';
-import fecthPhotos from '../services/api';
 import css from './App.module.css';
 
 export default class App extends Component {
   state = {
-    photos: [],
     requestForImg: '',
     visibleBtn: false,
-    numberOfPage: 1,
+    numberOfPage: null,
     urlOfLargePhoto: '',
     visibleModal: false,
     isLoader: false,
   };
 
-  componentDidUpdate(_, prevState) {
-    const { requestForImg, numberOfPage } = this.state;
-    if (numberOfPage !== prevState.numberOfPage) {
-      this.setState({ isLoader: true });
-
-      fecthPhotos(requestForImg, numberOfPage)
-        .then(hits => {
-          this.setState(prevState => {
-            return {
-              photos: [...prevState.photos, ...hits],
-            };
-          });
-        })
-        .finally(() => {
-          this.setState({ isLoader: false });
-        });
-    }
-  }
-
-  onRequestForImg = e => {
-    this.setState({ requestForImg: e.target.value.trim() });
+  togleLoader = () => {
+    this.setState(prevState => {
+      return { isLoader: !prevState.isLoader };
+    });
   };
 
-  onSubmit = e => {
-    e.preventDefault();
+  clearInput = () => {
+    this.setState({ requestForImg: '' });
+  };
 
-    const { requestForImg } = this.state;
-    if (!requestForImg) {
-      toast('Please, select image title');
-      return;
-    }
-
-    fecthPhotos(requestForImg).then(hits => {
-      if (hits.length === 0) {
-        toast('There is nothing to search(');
-        this.setState({ requestForImg: '' });
-        return;
-      }
-      this.setState({ photos: hits, visibleBtn: true });
-    });
+  onSubmit = value => {
+    this.setState({ requestForImg: value, numberOfPage: 1 });
   };
 
   loadMore = () => {
@@ -85,24 +53,28 @@ export default class App extends Component {
   };
 
   render() {
-    const { photos, visibleBtn, visibleModal, isLoader, requestForImg } =
-      this.state;
+    const {
+      urlOfLargePhoto,
+      visibleModal,
+      isLoader,
+      requestForImg,
+      numberOfPage,
+    } = this.state;
 
     return (
       <div className={css.App}>
         <ToastContainer autoClose={3000} theme="dark" />
-        <Searchbar
-          value={requestForImg}
-          onRequestForImg={this.onRequestForImg}
-          onSubmit={this.onSubmit}
+        <Searchbar onSubmit={this.onSubmit} />
+        <ImageGallery
+          getLargePhoto={this.getLargePhoto}
+          requestForImg={requestForImg}
+          loadMore={this.loadMore}
+          numberOfPage={numberOfPage}
+          togleLoader={this.togleLoader}
         />
-        <ImageGallery photos={photos} getLargePhoto={this.getLargePhoto} />
-        {visibleBtn && <Button loadMore={this.loadMore} />}
+
         {visibleModal && (
-          <Modal
-            url={this.state.urlOfLargePhoto}
-            togleModal={this.togleModal}
-          />
+          <Modal url={urlOfLargePhoto} togleModal={this.togleModal} />
         )}
         {isLoader && (
           <ColorRing
