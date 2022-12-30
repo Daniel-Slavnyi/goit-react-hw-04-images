@@ -26,7 +26,6 @@ export default function ImageGallery({
             return;
           }
           setPhotos(hits);
-          console.log(photos);
         })
         .finally(() => {
           togleLoader();
@@ -37,7 +36,6 @@ export default function ImageGallery({
 
   useEffect(() => {
     if (numberOfPage && numberOfPage !== 1) {
-      console.log('number', numberOfPage);
       togleLoader();
       fecthPhotos(requestForImg, numberOfPage)
         .then(hits => {
