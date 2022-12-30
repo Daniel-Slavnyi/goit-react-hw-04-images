@@ -15,3 +15,7 @@ export default function Button({ loadMore }) {
     </button>
   );
 }
+
+Button.propTypes = {
+  loadMore: PropTypes.func.isRequired,
+};
