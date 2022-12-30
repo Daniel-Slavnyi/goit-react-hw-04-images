@@ -1,22 +1,23 @@
+import { useState, useEffect } from 'react';
 import ImageGalleryItem from 'components/ImageGalleryItem/ImageGalleryItem';
 import fecthPhotos from 'components/services/api';
 import PropTypes from 'prop-types';
 import { toast } from 'react-toastify';
-import React, { Component } from 'react';
+
 import css from './ImageGallery.module.css';
 import Button from 'components/Button/Button';
 
-export default class ImageGallery extends Component {
-  state = {
-    photos: [],
-  };
+export default function ImageGallery({
+  getLargePhoto,
+  requestForImg,
+  loadMore,
+  numberOfPage,
+  togleLoader,
+}) {
+  const [photos, setPhotos] = useState([]);
 
-  componentDidUpdate(prevProps, prevState) {
-    const { requestForImg, numberOfPage, togleLoader } = this.props;
-    if (
-      this.props.requestForImg !== prevProps.requestForImg &&
-      this.props.requestForImg
-    ) {
+  useEffect(() => {
+    if (requestForImg) {
       togleLoader();
       fecthPhotos(requestForImg)
         .then(hits => {
@@ -24,60 +25,52 @@ export default class ImageGallery extends Component {
             toast('There is nothing to search(');
             return;
           }
-          this.setState({ photos: hits });
+          setPhotos(hits);
+          console.log(photos);
         })
         .finally(() => {
           togleLoader();
         });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [requestForImg]);
 
-    if (
-      this.props.numberOfPage !== prevProps.numberOfPage &&
-      this.props.numberOfPage !== 1
-    ) {
+  useEffect(() => {
+    if (numberOfPage && numberOfPage !== 1) {
+      console.log('number', numberOfPage);
       togleLoader();
       fecthPhotos(requestForImg, numberOfPage)
         .then(hits => {
-          this.setState(prevState => {
-            return {
-              photos: [...prevState.photos, ...hits],
-            };
-          });
+          setPhotos(s => [...s, ...hits]);
         })
         .finally(() => {
           togleLoader();
         });
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [numberOfPage]);
 
-  render() {
-    return (
-      <>
-        <ul className={css.ImageGallery}>
-          {this.state.photos.map(
-            ({ id, webformatURL, tags, largeImageURL }) => (
-              <ImageGalleryItem
-                key={id}
-                url={webformatURL}
-                alt={tags}
-                largeImageURL={largeImageURL}
-                getLargePhoto={this.props.getLargePhoto}
-              />
-            )
-          )}
-        </ul>
-        {this.state.photos.length > 0 && (
-          <Button loadMore={this.props.loadMore} />
-        )}
-      </>
-    );
-  }
+  return (
+    <>
+      <ul className={css.ImageGallery}>
+        {photos.map(({ id, webformatURL, tags, largeImageURL }) => (
+          <ImageGalleryItem
+            key={id}
+            url={webformatURL}
+            alt={tags}
+            largeImageURL={largeImageURL}
+            getLargePhoto={getLargePhoto}
+          />
+        ))}
+      </ul>
+      {photos.length > 13 && <Button loadMore={loadMore} />}
+    </>
+  );
 }
 
 ImageGallery.propTypes = {
   getLargePhoto: PropTypes.func.isRequired,
   requestForImg: PropTypes.string.isRequired,
-  loadMore: PropTypes.func.isRequired,
   numberOfPage: PropTypes.number,
   togleLoader: PropTypes.func.isRequired,
 };

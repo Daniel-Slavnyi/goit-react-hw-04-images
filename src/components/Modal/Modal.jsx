@@ -1,38 +1,36 @@
-import React from 'react';
-import { Component } from 'react';
+import { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import css from './Modal.module.css';
 
-export default class Modal extends Component {
-  componentDidMount() {
-    window.addEventListener('keydown', this.onKeyDown);
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.onKeyDown);
-  }
-
-  onKeyDown = e => {
+export default function Modal({ url, togleModal }) {
+  const onKeyDown = e => {
     if (e.code === 'Escape') {
-      this.props.togleModal();
+      togleModal();
     }
   };
 
-  closeByBAckDrop = e => {
+  const closeByBAckDrop = e => {
     if (e.target === e.currentTarget) {
-      this.props.togleModal();
+      togleModal();
     }
   };
 
-  render() {
-    return (
-      <div className={css.Overlay} onClick={this.closeByBAckDrop}>
-        <div className={css.Modal}>
-          <img src={this.props.url} alt="num" />
-        </div>
+  useEffect(() => {
+    window.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div className={css.Overlay} onClick={closeByBAckDrop}>
+      <div className={css.Modal}>
+        <img src={url} alt="num" />
       </div>
-    );
-  }
+    </div>
+  );
 }
 
 Modal.propTypes = {

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ColorRing } from 'react-loader-spinner';
@@ -7,86 +7,58 @@ import ImageGallery from '../ImageGallery/ImageGallery';
 import Searchbar from '../Searchbar/Searchbar';
 import css from './App.module.css';
 
-export default class App extends Component {
-  state = {
-    requestForImg: '',
-    visibleBtn: false,
-    numberOfPage: null,
-    urlOfLargePhoto: '',
-    visibleModal: false,
-    isLoader: false,
+export default function App() {
+  const [visibleModal, setVisibleModal] = useState(false);
+  const [isLoader, setIsLoader] = useState(false);
+  const [requestForImg, setRequestForImg] = useState('');
+  const [numberOfPage, setNumberOfPage] = useState(null);
+  const [urlOfLargePhoto, setUrlOfLargePhoto] = useState('');
+
+  const togleLoader = () => {
+    setIsLoader(s => !s);
   };
 
-  togleLoader = () => {
-    this.setState(prevState => {
-      return { isLoader: !prevState.isLoader };
-    });
+  const loadMore = () => {
+    setNumberOfPage(s => s + 1);
   };
 
-  clearInput = () => {
-    this.setState({ requestForImg: '' });
+  const togleModal = () => {
+    setVisibleModal(s => !s);
   };
 
-  onSubmit = value => {
-    this.setState({ requestForImg: value, numberOfPage: 1 });
+  const onSubmit = value => {
+    setRequestForImg(value);
+    setNumberOfPage(1);
   };
 
-  loadMore = () => {
-    this.setState(prevState => {
-      return {
-        numberOfPage: prevState.numberOfPage + 1,
-      };
-    });
+  const getLargePhoto = e => {
+    setUrlOfLargePhoto(e.currentTarget.dataset.largurl);
+    togleModal();
   };
 
-  togleModal = () => {
-    this.setState(prevState => {
-      return {
-        visibleModal: !prevState.visibleModal,
-      };
-    });
-  };
+  return (
+    <div className={css.App}>
+      <ToastContainer autoClose={3000} theme="dark" />
+      <Searchbar onSubmit={onSubmit} />
+      <ImageGallery
+        getLargePhoto={getLargePhoto}
+        requestForImg={requestForImg}
+        loadMore={loadMore}
+        numberOfPage={numberOfPage}
+        togleLoader={togleLoader}
+      />
 
-  getLargePhoto = e => {
-    this.setState({ urlOfLargePhoto: e.currentTarget.dataset.largurl });
-    this.togleModal();
-  };
-
-  render() {
-    const {
-      urlOfLargePhoto,
-      visibleModal,
-      isLoader,
-      requestForImg,
-      numberOfPage,
-    } = this.state;
-
-    return (
-      <div className={css.App}>
-        <ToastContainer autoClose={3000} theme="dark" />
-        <Searchbar onSubmit={this.onSubmit} />
-        <ImageGallery
-          getLargePhoto={this.getLargePhoto}
-          requestForImg={requestForImg}
-          loadMore={this.loadMore}
-          numberOfPage={numberOfPage}
-          togleLoader={this.togleLoader}
+      {visibleModal && <Modal url={urlOfLargePhoto} togleModal={togleModal} />}
+      {isLoader && (
+        <ColorRing
+          visible={true}
+          height="50"
+          width="50"
+          ariaLabel="blocks-loading"
+          wrapperClass={css.Loader}
+          colors={['#e15b64', '#f47e60', '#f8b26a', '#abbd81', '#849b87']}
         />
-
-        {visibleModal && (
-          <Modal url={urlOfLargePhoto} togleModal={this.togleModal} />
-        )}
-        {isLoader && (
-          <ColorRing
-            visible={true}
-            height="50"
-            width="50"
-            ariaLabel="blocks-loading"
-            wrapperClass={css.Loader}
-            colors={['#e15b64', '#f47e60', '#f8b26a', '#abbd81', '#849b87']}
-          />
-        )}
-      </div>
-    );
-  }
+      )}
+    </div>
+  );
 }
